@@ -10,9 +10,9 @@ def collisions_by_weekday(df: pd.DataFrame) -> pd.DataFrame:
     if "OCC_DOW" not in df.columns:
         raise ValueError("Dataset must contain 'OCC_DOW' column.")
 
-        weekday_order = [
-        "Monday","Tuesday","Wednesday",
-        "Thursday","Friday","Saturday","Sunday"
+    weekday_order = [
+    "Monday","Tuesday","Wednesday",
+    "Thursday","Friday","Saturday","Sunday"
     ]
 
     weekday_counts = (
