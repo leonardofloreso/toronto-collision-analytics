@@ -20,5 +20,13 @@ def collisions_by_neighbourhood(df: pd.DataFrame) -> dict:
         .value_counts()
         .to_dict()
     )
+    return result
 
+def collisions_by_hour(df: pd.DataFrame) -> pd.DataFrame:
+    result = (
+        df.groupby("OCC_HOUR")
+        .size()
+        .reset_index(name="collision_count")
+        .sort_values("OCC_HOUR")
+    )
     return result
