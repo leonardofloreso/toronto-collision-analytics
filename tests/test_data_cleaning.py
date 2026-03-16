@@ -1,7 +1,9 @@
 import pandas as pd
+import pytest
+
 from src.cleaning import (
     clean_missing_neighbourhood_values,
-    remove_invalid_geographic_coordinates
+    remove_invalid_geographic_coordinates,
 )
 
 
@@ -29,24 +31,21 @@ def test_clean_missing_neighbourhood_values_strips_spaces():
 def test_clean_missing_neighbourhood_values_raises_error_if_column_missing():
     df = pd.DataFrame({"OTHER_COLUMN": ["A", "B"]})
 
-    try:
+    with pytest.raises(ValueError, match="not found"):
         clean_missing_neighbourhood_values(df)
-        assert False, "Expected ValueError"
-    except ValueError as e:
-        assert "not found" in str(e)
 
 
 def test_remove_invalid_geographic_coordinates_removes_bad_rows():
     df = pd.DataFrame({
-        "LATITUDE": [43.7, 0, None, 95, 43.65],
-        "LONGITUDE": [-79.4, -79.3, -79.2, -79.1, 0]
+        "LAT_WGS84": [43.7, 0, None, 95, 43.65],
+        "LONG_WGS84": [-79.4, -79.3, -79.2, -79.1, 0]
     })
 
     result = remove_invalid_geographic_coordinates(df)
 
     assert len(result) == 1
-    assert result.iloc[0]["LATITUDE"] == 43.7
-    assert result.iloc[0]["LONGITUDE"] == -79.4
+    assert result.iloc[0]["LAT_WGS84"] == 43.7
+    assert result.iloc[0]["LONG_WGS84"] == -79.4
 
 
 def test_remove_invalid_geographic_coordinates_raises_error_if_column_missing():
@@ -55,8 +54,5 @@ def test_remove_invalid_geographic_coordinates_raises_error_if_column_missing():
         "LON": [-79.4]
     })
 
-    try:
+    with pytest.raises(ValueError, match="not found"):
         remove_invalid_geographic_coordinates(df)
-        assert False, "Expected ValueError"
-    except ValueError as e:
-        assert "not found" in str(e)
