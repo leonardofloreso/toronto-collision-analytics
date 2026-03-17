@@ -57,3 +57,45 @@ def plot_collisions_by_weekday(weekday_data: pd.DataFrame):
 
     plt.tight_layout()
     return fig
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+WEEKDAY_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+
+def collisions_by_weekday(df: pd.DataFrame) -> pd.DataFrame:
+    ...
+    return weekday_counts
+
+
+def plot_collisions_by_weekday(weekday_data: pd.DataFrame):
+    ...
+    return fig
+
+
+# =========================
+# US-07: Collision Severity
+# =========================
+
+def analyze_collision_severity(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Analyze collisions by severity and return a summary DataFrame.
+    """
+    if "ACCLASS" not in df.columns:
+        raise ValueError("The dataset must contain an 'ACCLASS' column.")
+
+    severity_data = (
+        df["ACCLASS"]
+        .fillna("Unknown")
+        .astype(str)
+        .str.strip()
+        .str.title()
+    )
+
+    severity_summary = severity_data.value_counts().reset_index()
+    severity_summary.columns = ["severity", "count"]
+
+    return severity_summary
+    
