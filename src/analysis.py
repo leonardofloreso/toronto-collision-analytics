@@ -42,3 +42,15 @@ def _get_neighbourhood_column(df: pd.DataFrame) -> str:
     if "NEIGHBOURHOOD_158" in df.columns:
         return "NEIGHBOURHOOD_158"
     raise KeyError("No neighbourhood column found in dataframe")
+
+
+def collisions_by_road_user(df: pd.DataFrame) -> dict:
+    road_user_columns = ["AUTOMOBILE", "MOTORCYCLE", "PASSENGER", "BICYCLE", "PEDESTRIAN"]
+
+    result = {}
+
+    for col in road_user_columns:
+        cleaned = df[col].astype(str).str.strip().str.upper()
+        result[col] = (cleaned == "YES").sum()
+
+    return result
