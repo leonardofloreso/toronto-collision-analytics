@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-WEEKDAY_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+WEEKDAY_ORDER = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
 
 def collisions_by_weekday(df: pd.DataFrame) -> pd.DataFrame:
@@ -15,7 +15,8 @@ def collisions_by_weekday(df: pd.DataFrame) -> pd.DataFrame:
 
     weekday_counts = (
         df["OCC_DOW"]
-        .dropna()
+        .astype(str)
+        .str.strip()
         .value_counts()
         .reindex(WEEKDAY_ORDER, fill_value=0)
         .reset_index()
@@ -58,22 +59,6 @@ def plot_collisions_by_weekday(weekday_data: pd.DataFrame):
     plt.tight_layout()
     return fig
 
-import pandas as pd
-import matplotlib.pyplot as plt
-
-
-WEEKDAY_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-
-
-def collisions_by_weekday(df: pd.DataFrame) -> pd.DataFrame:
-    ...
-    return weekday_counts
-
-
-def plot_collisions_by_weekday(weekday_data: pd.DataFrame):
-    ...
-    return fig
-
 
 # =========================
 # US-07: Collision Severity
@@ -98,4 +83,3 @@ def analyze_collision_severity(df: pd.DataFrame) -> pd.DataFrame:
     severity_summary.columns = ["severity", "count"]
 
     return severity_summary
-    

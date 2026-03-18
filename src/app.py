@@ -6,13 +6,20 @@ from analytics import (
     plot_collisions_by_weekday,
 )
 
-from plots import (
-    plot_collisions_by_neighbourhood,
-    plot_collisions_by_hour
+from analysis import (
+    collisions_by_road_user,
+    collisions_by_hour,
+    collisions_by_neighbourhood,
 )
 
-DATA_PATH = "Traffic_Collisions_Open_Data.csv"
+from plots import (
+    plot_collisions_by_neighbourhood,
+    plot_collisions_by_hour,
+    plot_road_user_distribution,
+    plot_collisions_by_weekday_styled,
+)
 
+DATA_PATH = "data/Traffic_Collisions_Open_Data.csv"
 
 
 @st.cache_data
@@ -34,29 +41,32 @@ st.write(
 # Load dataset
 df = load_data()
 
+# --- Dataset summary and preview ---
+
+st.subheader("Dataset Summary")
+
+col_a, col_b, col_c = st.columns(3)
+
+col_a.metric("Rows", f"{len(df):,}")
+col_b.metric("Columns", len(df.columns))
+col_c.metric("Neighbourhoods", df["NEIGHBOURHOOD_158"].nunique())
+
+st.subheader("Cleaned Data Preview")
+st.dataframe(df.head(10), use_container_width=True)
+
 # --- Analytics calculations ---
 
 weekday_data = collisions_by_weekday(df)
-
-# Hourly aggregation (if not already done elsewhere)
-hourly_data = (
-    df.groupby("OCC_HOUR")
-    .size()
-    .reset_index(name="collision_count")
-)
-
-# Neighbourhood aggregation
-neighbourhood_counts = (
-    df["NEIGHBOURHOOD_158"]
-    .value_counts()
-    .to_dict()
-)
+road_user_data = collisions_by_road_user(df)
+hourly_data = collisions_by_hour(df)
+neighbourhood_counts = collisions_by_neighbourhood(df)
 
 # --- Generate plots ---
 
-weekday_fig = plot_collisions_by_weekday(weekday_data)
+weekday_fig = plot_collisions_by_weekday_styled(weekday_data)
 hour_fig = plot_collisions_by_hour(hourly_data)
 neighbourhood_fig = plot_collisions_by_neighbourhood(neighbourhood_counts)
+road_user_fig = plot_road_user_distribution(road_user_data)
 
 # --- Dashboard layout ---
 
@@ -74,3 +84,6 @@ with col2:
 
 st.markdown("### Top Collision Neighbourhoods")
 st.pyplot(neighbourhood_fig)
+
+st.markdown("### Road User Involvement Distribution")
+st.pyplot(road_user_fig)

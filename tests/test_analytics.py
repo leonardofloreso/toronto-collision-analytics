@@ -103,3 +103,31 @@ def test_collisions_by_neighbourhood_raises_keyerror_if_no_neighbourhood_column_
 
     with pytest.raises(KeyError, match="No neighbourhood column found"):
         collisions_by_neighbourhood(df)
+
+
+
+from src.analysis import collisions_by_road_user
+
+
+def test_collisions_by_road_user_basic():
+    data = {
+        "AUTOMOBILE": ["YES", "NO", "YES", "N/R"],
+        "MOTORCYCLE": ["NO", "YES", "NO", "N/R"],
+        "PASSENGER": ["NO", "NO", "NO", "N/R"],
+        "BICYCLE": ["YES", "NO", "N/R", "NO"],
+        "PEDESTRIAN": ["NO", "YES", "NO", "N/R"],
+    }
+
+    df = pd.DataFrame(data)
+
+    result = collisions_by_road_user(df)
+
+    expected = {
+        "AUTOMOBILE": 2,
+        "MOTORCYCLE": 1,
+        "PASSENGER": 0,
+        "BICYCLE": 1,
+        "PEDESTRIAN": 1,
+    }
+
+    assert result == expected
