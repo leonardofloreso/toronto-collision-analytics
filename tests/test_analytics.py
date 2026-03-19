@@ -1,7 +1,12 @@
 import pandas as pd
 import pytest
 
-from src.analysis import collisions_by_hour, collisions_by_neighbourhood
+from src.analysis import (
+    collisions_by_hour,
+    collisions_by_neighbourhood,
+    collisions_by_road_user,
+)
+from src.analytics import collisions_by_year
 
 
 def test_collisions_by_hour_returns_hourly_counts():
@@ -105,20 +110,14 @@ def test_collisions_by_neighbourhood_raises_keyerror_if_no_neighbourhood_column_
         collisions_by_neighbourhood(df)
 
 
-
-from src.analysis import collisions_by_road_user
-
-
 def test_collisions_by_road_user_basic():
-    data = {
+    df = pd.DataFrame({
         "AUTOMOBILE": ["YES", "NO", "YES", "N/R"],
         "MOTORCYCLE": ["NO", "YES", "NO", "N/R"],
         "PASSENGER": ["NO", "NO", "NO", "N/R"],
         "BICYCLE": ["YES", "NO", "N/R", "NO"],
         "PEDESTRIAN": ["NO", "YES", "NO", "N/R"],
-    }
-
-    df = pd.DataFrame(data)
+    })
 
     result = collisions_by_road_user(df)
 
@@ -131,3 +130,31 @@ def test_collisions_by_road_user_basic():
     }
 
     assert result == expected
+
+
+def test_collisions_by_year_returns_dataframe():
+    df = pd.DataFrame({
+        "OCC_YEAR": [2015, 2015, 2016, 2016, 2016]
+    })
+
+    result = collisions_by_year(df)
+
+    assert isinstance(result, pd.DataFrame)
+    assert "OCC_YEAR" in result.columns
+    assert "collision_count" in result.columns
+
+
+def test_collisions_by_year_correct_counts():
+    df = pd.DataFrame({
+        "OCC_YEAR": [2015, 2015, 2016, 2016, 2016]
+    })
+
+    result = collisions_by_year(df)
+
+    expected = {
+        2015: 2,
+        2016: 3
+    }
+
+    for _, row in result.iterrows():
+        assert expected[row["OCC_YEAR"]] == row["collision_count"]

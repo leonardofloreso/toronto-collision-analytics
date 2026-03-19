@@ -164,3 +164,38 @@ def plot_collisions_by_weekday_styled(weekday_data: pd.DataFrame):
 
     plt.tight_layout()
     return fig
+
+
+def plot_collisions_by_year(yearly_data: pd.DataFrame):
+    """
+    Create a line chart showing collision trends over years.
+    """
+    required_columns = {"OCC_YEAR", "collision_count"}
+    if not required_columns.issubset(yearly_data.columns):
+        raise ValueError(
+            "yearly_data must contain 'OCC_YEAR' and 'collision_count' columns."
+        )
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    ax.plot(
+        yearly_data["OCC_YEAR"],
+        yearly_data["collision_count"],
+        marker="o",
+        linewidth=2
+    )
+
+    ax.set_title(
+        "Yearly Traffic Collision Trends",
+        fontsize=16,
+        fontweight="bold",
+        pad=15,
+    )
+    ax.set_xlabel("Year", fontsize=12)
+    ax.set_ylabel("Number of Collisions", fontsize=12)
+
+    ax.grid(True, linestyle="--", alpha=0.4)
+    ax.set_axisbelow(True)
+
+    plt.tight_layout()
+    return fig

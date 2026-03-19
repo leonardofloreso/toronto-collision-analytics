@@ -83,3 +83,20 @@ def analyze_collision_severity(df: pd.DataFrame) -> pd.DataFrame:
     severity_summary.columns = ["severity", "count"]
 
     return severity_summary
+
+
+def collisions_by_year(df: pd.DataFrame) -> pd.DataFrame:
+    if "OCC_YEAR" not in df.columns:
+        raise ValueError("Dataset must contain 'OCC_YEAR' column.")
+
+    yearly_counts = (
+        df["OCC_YEAR"]
+        .dropna()
+        .astype(int)
+        .value_counts()
+        .sort_index()
+        .reset_index()
+    )
+
+    yearly_counts.columns = ["OCC_YEAR", "collision_count"]
+    return yearly_counts
