@@ -100,39 +100,3 @@ def collisions_by_year(df: pd.DataFrame) -> pd.DataFrame:
 
     yearly_counts.columns = ["OCC_YEAR", "collision_count"]
     return yearly_counts
-
-
-
-# =========================
-# US-11: Collisions by Month
-# =========================
-
-
-def collisions_by_month(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Group collisions by month name and keep calendar order.
-    """
-
-    if "OCC_MONTH" not in df.columns:
-        raise ValueError("Dataset must contain 'OCC_MONTH' column.")
-
-    month_order = [
-        "January", "February", "March", "April",
-        "May", "June", "July", "August",
-        "September", "October", "November", "December"
-    ]
-
-    month_counts = (
-        df["OCC_MONTH"]
-        .dropna()
-        .astype(str)
-        .str.strip()
-        .value_counts()
-        .reindex(month_order, fill_value=0)
-        .reset_index()
-    )
-
-    month_counts.columns = ["OCC_MONTH", "collision_count"]
-
-    return month_counts
-
