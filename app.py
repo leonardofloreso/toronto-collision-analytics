@@ -45,31 +45,62 @@ st.write(
 # Load dataset
 df = load_data()
 
+# --- Filters ---
+
+st.sidebar.header("Filters")
+
+year_options = sorted(df["OCC_YEAR"].dropna().unique().tolist())
+selected_years = st.sidebar.multiselect(
+    "Select Year(s)",
+    options=year_options,
+    default=year_options
+)
+
+neighbourhood_options = sorted(df["NEIGHBOURHOOD_158"].dropna().unique().tolist())
+selected_neighbourhoods = st.sidebar.multiselect(
+    "Select Neighbourhood(s)",
+    options=neighbourhood_options,
+    default=neighbourhood_options
+)
+
+filtered_df = df[
+    df["OCC_YEAR"].isin(selected_years) &
+    df["NEIGHBOURHOOD_158"].isin(selected_neighbourhoods)
+]
+
+if filtered_df.empty:
+    st.warning("No data available for the selected filters.")
+    st.stop()
+
+
 # --- Dataset summary and preview ---
 
 st.subheader("Dataset Summary")
 
 col_a, col_b, col_c = st.columns(3)
 
-col_a.metric("Rows", f"{len(df):,}")
-col_b.metric("Columns", len(df.columns))
-col_c.metric("Neighbourhoods", df["NEIGHBOURHOOD_158"].nunique())
+col_a.metric("Rows", f"{len(filtered_df):,}")
+col_b.metric("Columns", len(filtered_df.columns))
+col_c.metric("Neighbourhoods", filtered_df["NEIGHBOURHOOD_158"].nunique())
+
 
 st.subheader("Data Preview")
-st.dataframe(df.head(10), use_container_width=True)
+st.dataframe(filtered_df.head(10), use_container_width=True)
+
 
 # --- Analytics calculations ---
 
-weekday_data = collisions_by_weekday(df)
-road_user_data = collisions_by_road_user(df)
-hourly_data = collisions_by_hour(df)
-neighbourhood_counts = collisions_by_neighbourhood(df)
-
+weekday_data = collisions_by_weekday(filtered_df)
+road_user_data = collisions_by_road_user(filtered_df)
+hourly_data = collisions_by_hour(filtered_df)
+neighbourhood_counts = collisions_by_neighbourhood(filtered_df)
 
 # Use only full years for yearly trend analysis
-df_yearly = df[(df["OCC_YEAR"] >= 2015) & (df["OCC_YEAR"] <= 2024)]
+df_yearly = filtered_df[(filtered_df["OCC_YEAR"] >= 2015) & (filtered_df["OCC_YEAR"] <= 2024)]
 yearly_data = collisions_by_year(df_yearly)
-month_data = collisions_by_month(df_yearly)
+
+month_data = collisions_by_month(filtered_df)
+
 
 
 # --- Generate plots ---
