@@ -199,3 +199,34 @@ def plot_collisions_by_year(yearly_data: pd.DataFrame):
 
     plt.tight_layout()
     return fig
+
+import matplotlib.pyplot as plt
+import pandas as pd
+
+
+def plot_collisions_by_month(month_data: pd.DataFrame):
+    required_columns = {"OCC_MONTH", "collision_count"}
+    if not required_columns.issubset(month_data.columns):
+        raise ValueError(
+            "month_data must contain 'OCC_MONTH' and 'collision_count' columns."
+        )
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    ax.bar(
+        month_data["OCC_MONTH"],
+        month_data["collision_count"],
+        edgecolor="black",
+        linewidth=0.8,
+    )
+
+    ax.set_title("Traffic Collisions by Month", fontsize=16, fontweight="bold", pad=15)
+    ax.set_xlabel("Month", fontsize=12)
+    ax.set_ylabel("Number of Collisions", fontsize=12)
+
+    ax.grid(axis="y", linestyle="--", alpha=0.4)
+    ax.set_axisbelow(True)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    return fig

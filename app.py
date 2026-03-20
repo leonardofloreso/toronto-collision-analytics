@@ -1,75 +1,117 @@
-from pathlib import Path
-
 import streamlit as st
+import pandas as pd
 
-from main import prepare_dataset
+from src.analytics import (
+    collisions_by_weekday,
+    plot_collisions_by_weekday,
+    collisions_by_year,
+    collisions_by_month,
+)
 
-DATA_FILE = Path("data/Traffic_Collisions_Open_Data.csv")
+from src.analysis import (
+    collisions_by_road_user,
+    collisions_by_hour,
+    collisions_by_neighbourhood,
+)
+
+from src.plots import (
+    plot_collisions_by_neighbourhood,
+    plot_collisions_by_hour,
+    plot_road_user_distribution,
+    plot_collisions_by_weekday_styled,
+    plot_collisions_by_year,
+    plot_collisions_by_month,
+)
+
+DATA_PATH = "data/Traffic_Collisions_Open_Data.csv"
 
 
 @st.cache_data
-def load_clean_data():
-    return prepare_dataset(DATA_FILE)
+def load_data():
+    return pd.read_csv(DATA_PATH)
 
 
-def collisions_by_hour(df):
-    hourly = (
-        df.groupby("OCC_HOUR")
-        .size()
-        .reset_index(name="Collision_Count")
-        .sort_values("OCC_HOUR")
-    )
-    return hourly
+st.set_page_config(
+    page_title="Toronto Collision Analytics Dashboard",
+    layout="wide"
+)
+
+st.title("Toronto Traffic Collision Analytics Dashboard")
+st.write(
+    "A simple dashboard that displays multiple traffic collision analytics "
+    "results and visualizations."
+)
+
+# Load dataset
+df = load_data()
+
+# --- Dataset summary and preview ---
+
+st.subheader("Dataset Summary")
+
+col_a, col_b, col_c = st.columns(3)
+
+col_a.metric("Rows", f"{len(df):,}")
+col_b.metric("Columns", len(df.columns))
+col_c.metric("Neighbourhoods", df["NEIGHBOURHOOD_158"].nunique())
+
+st.subheader("Data Preview")
+st.dataframe(df.head(10), use_container_width=True)
+
+# --- Analytics calculations ---
+
+weekday_data = collisions_by_weekday(df)
+road_user_data = collisions_by_road_user(df)
+hourly_data = collisions_by_hour(df)
+neighbourhood_counts = collisions_by_neighbourhood(df)
 
 
-def top_neighbourhoods(df, top_n=10):
-    neighbourhoods = (
-        df.groupby("NEIGHBOURHOOD_158")
-        .size()
-        .reset_index(name="Collision_Count")
-        .sort_values("Collision_Count", ascending=False)
-        .head(top_n)
-    )
-    return neighbourhoods
+# Use only full years for yearly trend analysis
+df_yearly = df[(df["OCC_YEAR"] >= 2015) & (df["OCC_YEAR"] <= 2024)]
+yearly_data = collisions_by_year(df_yearly)
+month_data = collisions_by_month(df_yearly)
 
 
-def main():
-    st.set_page_config(
-        page_title="Toronto Collision Analytics",
-        layout="wide"
-    )
+# --- Generate plots ---
 
-    st.title("Toronto Traffic Collision Analytics Tool")
-    st.write("Sprint 1 - Basic dashboard for cleaned collision data")
-
-    try:
-        df = load_clean_data()
-
-        st.subheader("Dataset Summary")
-
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Rows", f"{len(df):,}")
-        col2.metric("Columns", len(df.columns))
-        col3.metric("Neighbourhoods", df["NEIGHBOURHOOD_158"].nunique())
-
-        st.subheader("Cleaned Data Preview")
-        st.dataframe(df.head(20), use_container_width=True)
-
-        st.subheader("Collisions by Hour")
-        hourly_df = collisions_by_hour(df)
-        st.bar_chart(hourly_df.set_index("OCC_HOUR"))
-
-        st.subheader("Top 10 Neighbourhoods by Collision Count")
-        neighbourhood_df = top_neighbourhoods(df, top_n=10)
-        st.bar_chart(neighbourhood_df.set_index("NEIGHBOURHOOD_158"))
-
-    except FileNotFoundError:
-        st.error("Dataset file not found. Make sure it exists in the data folder.")
-    except ValueError as e:
-        st.error(f"Validation error: {e}")
-    except Exception as e:
-        st.error(f"Unexpected error: {e}")
+weekday_fig = plot_collisions_by_weekday_styled(weekday_data)
+hour_fig = plot_collisions_by_hour(hourly_data)
+neighbourhood_fig = plot_collisions_by_neighbourhood(neighbourhood_counts)
+road_user_fig = plot_road_user_distribution(road_user_data)
+yearly_fig = plot_collisions_by_year(yearly_data)
+month_fig = plot_collisions_by_month(month_data)
 
 
-if __name__ == "__main__":
-    main()
+# --- Dashboard layout ---
+
+st.subheader("Collision Analytics Results")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("### Collisions by Weekday")
+    st.pyplot(weekday_fig)
+
+with col2:
+    st.markdown("### Collisions by Hour")
+    st.pyplot(hour_fig)
+
+st.markdown("### Yearly Collision Trends (2015–2024)")
+st.pyplot(yearly_fig)
+
+st.markdown("**Key Insights:**")
+
+st.markdown("""
+- Collisions increased steadily between 2015–2019  
+- Sharp drop in 2020 (likely COVID-19 impact)  
+- Recovery trend observed from 2022 onward  
+""")
+
+st.markdown("### Top Collision Neighbourhoods")
+st.pyplot(neighbourhood_fig)
+
+st.markdown("### Road User Involvement Distribution")
+st.pyplot(road_user_fig)
+
+st.markdown("### Monthly Collision Trends")
+st.pyplot(month_fig)
